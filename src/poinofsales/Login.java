@@ -4,19 +4,55 @@
  */
 package poinofsales;
 
+import com.mysql.cj.jdbc.MysqlDataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.swing.JOptionPane;
 
-/**
- *
- * @author USER
- */
+
 public class Login extends javax.swing.JFrame {
+    Connection conn = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
 
     /**
      * Creates new form Login
      */
     public Login() {
         initComponents();
+    }
+
+    public Connection getConnection() {
+        try {
+            // Sesuaikan dengan database dan user yang kamu gunakan
+            conn = mysqlDataSource.getConnection("jdbc:mysql://localhost:3306/apoteker?serverTimezone=Asia/Jakarta");
+            return conn;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Connection Failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public boolean checkLogin(String username, String password) {
+        conn = getConnection();
+        String sql = "SELECT * FROM users WHERE username=? AND password=?";
+
+        try {
+            pst = conn.prepareStatement(sql);
+            pst.setString(1, username);
+            pst.setString(2, password);
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Login Failed: " + e.getMessage());
+            return false;
+        }
     }
 
     /**
@@ -145,18 +181,18 @@ public class Login extends javax.swing.JFrame {
 
     private void btn_loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_loginActionPerformed
         // TODO add your handling code here:
-         if (txt_username.getText().equals("")){
-            JOptionPane.showMessageDialog(null, "please fill out username");
+          
+        String username = txt_username.getText();
+        String password = txt_password.getText();
+
+        if (checkLogin(username, password)) {
+            JOptionPane.showMessageDialog(null, "Login Successful");
+            // Masuk ke halaman utama
+        } else {
+            JOptionPane.showMessageDialog(null, "Invalid Username or Password");
         }
-        else if(txt_password.getText().equals("")){
-            JOptionPane.showMessageDialog(null, "please fill out password");
-        }
-        else if(txt_username.getText().contains("Admin")&& txt_password.getText().contains("12345678")){
-            JOptionPane.showMessageDialog(null, "Login Successfull");
-        }
-        else{
-            JOptionPane.showMessageDialog(null, "wrong username or password!!!", "Message",JOptionPane.ERROR_MESSAGE);
-        }
+    }
+
     }//GEN-LAST:event_btn_loginActionPerformed
 
     private void txt_usernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_usernameActionPerformed
@@ -194,13 +230,16 @@ public class Login extends javax.swing.JFrame {
         }
         //</editor-fold>
 
+        //</editor-fold>
+
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Login().setVisible(true);
-            }
-        });
-    }
+        java.awt.EventQueue.invokeLater(() -> {
+        Login L = new Login();
+        L.setExtendedState(Frame.MAXIMIZED_BOTH);
+        L.setVisible(true);  // Menggunakan instance "L" untuk mengakses metode non-static
+    });
+}
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_login;
